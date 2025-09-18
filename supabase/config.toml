@@ -1,1 +1,7 @@
 project_id = "dpixanjrhvwrhsacamwd"
+
+[functions.ai-chatbot]
+verify_jwt = false
+
+[functions.ai-analyzer]
+verify_jwt = false
