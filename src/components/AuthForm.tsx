@@ -4,17 +4,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, Mail, Lock, User, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthFormProps {
   selectedRole: 'student' | 'teacher' | 'parent' | 'admin';
-  onLogin: (userData: { name: string; role: string; email: string }) => void;
+  onSuccess: () => void;
   onBack: () => void;
 }
 
-const AuthForm = ({ selectedRole, onLogin, onBack }: AuthFormProps) => {
+const AuthForm = ({ selectedRole, onSuccess, onBack }: AuthFormProps) => {
+  const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -56,24 +59,52 @@ const AuthForm = ({ selectedRole, onLogin, onBack }: AuthFormProps) => {
 
   const roleDetails = getRoleDetails();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login - in real app, this would validate credentials
-    onLogin({
-      name: formData.name || `Demo ${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}`,
-      role: selectedRole,
-      email: formData.email || `demo-${selectedRole}@smartcurriculum.com`
-    });
+    if (!formData.email || !formData.password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await signIn(formData.email, formData.password);
+    if (!error) {
+      onSuccess();
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock signup - in real app, this would create account
-    onLogin({
-      name: formData.name,
-      role: selectedRole,
-      email: formData.email
+    if (!formData.name || !formData.email || !formData.password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await signUp(formData.email, formData.password, {
+      first_name: formData.name.split(' ')[0] || formData.name,
+      last_name: formData.name.split(' ').slice(1).join(' ') || '',
+      role: selectedRole
     });
+    
+    if (!error) {
+      onSuccess();
+    }
   };
 
   return (
@@ -170,11 +201,10 @@ const AuthForm = ({ selectedRole, onLogin, onBack }: AuthFormProps) => {
                     type="button"
                     variant="outline"
                     className="w-full"
-                    onClick={() => onLogin({
-                      name: `Demo ${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}`,
-                      role: selectedRole,
-                      email: `demo-${selectedRole}@smartcurriculum.com`
-                    })}
+                    onClick={async () => {
+                      const { error } = await signIn("demo@example.com", "demo123");
+                      if (!error) onSuccess();
+                    }}
                   >
                     Continue with Demo Account
                   </Button>

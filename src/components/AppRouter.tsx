@@ -4,6 +4,9 @@ import LandingPage from "@/components/LandingPage";
 import AuthForm from "@/components/AuthForm";
 import Navigation from "@/components/Navigation";
 import StudentDashboard from "@/components/dashboards/StudentDashboard";
+import TeacherDashboard from "@/components/dashboards/TeacherDashboard";
+import ParentDashboard from "@/components/dashboards/ParentDashboard";
+import AdminDashboard from "@/components/dashboards/AdminDashboard";
 import AttendanceSystem from "@/components/AttendanceSystem";
 import AIAnalyzer from "@/components/AIAnalyzer";
 
@@ -66,7 +69,18 @@ const AppRouter = () => {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <StudentDashboard />;
+        switch (profile?.role) {
+          case 'student':
+            return <StudentDashboard />;
+          case 'teacher':
+            return <TeacherDashboard />;
+          case 'parent':
+            return <ParentDashboard />;
+          case 'admin':
+            return <AdminDashboard />;
+          default:
+            return <StudentDashboard />;
+        }
       case 'attendance':
         return <AttendanceSystem />;
       case 'ai-analyzer':
