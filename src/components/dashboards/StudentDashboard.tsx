@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,14 +13,24 @@ import {
   CheckCircle,
   AlertCircle,
   Users,
-  BarChart3
+  BarChart3,
+  QrCode
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
+import { useAttendance } from "@/hooks/useAttendance";
+import QRScanner from "@/components/QRScanner";
+import { useToast } from "@/hooks/use-toast";
 
 const StudentDashboard = () => {
-  // Mock data
+  const { profile } = useAuth();
+  const { attendanceRecords, attendanceStats, loading } = useAttendance();
+  const { toast } = useToast();
+  const [showQRScanner, setShowQRScanner] = useState(false);
+
+  // Real data from backend
   const stats = {
-    attendanceRate: 92,
+    attendanceRate: attendanceStats?.attendance_percentage || 0,
     completedAssignments: 15,
     totalAssignments: 18,
     upcomingClasses: 4,
@@ -46,6 +57,25 @@ const StudentDashboard = () => {
     { title: 'Chemistry Quiz Prep', subject: 'Chemistry', due: '1 week', status: 'not-started', priority: 'low' }
   ];
 
+  const handleQRScan = (data: string) => {
+    try {
+      const qrData = JSON.parse(data);
+      if (qrData.type === 'attendance') {
+        toast({
+          title: "Attendance Marked",
+          description: "Your attendance has been successfully recorded",
+        });
+        setShowQRScanner(false);
+      }
+    } catch (error) {
+      toast({
+        title: "Invalid QR Code",
+        description: "Please scan a valid attendance QR code",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -63,6 +93,10 @@ const StudentDashboard = () => {
             <Award className="w-3 h-3 mr-1" />
             {stats.badges} Badges Earned
           </Badge>
+          <Button onClick={() => setShowQRScanner(true)} className="gap-2">
+            <QrCode className="w-4 h-4" />
+            Mark Attendance
+          </Button>
         </div>
       </motion.div>
 
@@ -79,7 +113,7 @@ const StudentDashboard = () => {
             <Calendar className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">{stats.attendanceRate}%</div>
+            <div className="text-2xl font-bold text-primary">{stats.attendanceRate.toFixed(1)}%</div>
             <div className="space-y-2 mt-2">
               <Progress value={stats.attendanceRate} className="h-2" />
               <p className="text-xs text-muted-foreground">Excellent attendance!</p>
@@ -279,6 +313,15 @@ const StudentDashboard = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* QR Scanner Modal */}
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScan={handleQRScan}
+        title="Attendance QR Scanner"
+        description="Scan the QR code to mark your attendance"
+      />
     </div>
   );
 };

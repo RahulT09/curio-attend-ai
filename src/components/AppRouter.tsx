@@ -9,6 +9,8 @@ import ParentDashboard from "@/components/dashboards/ParentDashboard";
 import AdminDashboard from "@/components/dashboards/AdminDashboard";
 import AttendanceSystem from "@/components/AttendanceSystem";
 import AIAnalyzer from "@/components/AIAnalyzer";
+import AttendanceReport from "@/components/AttendanceReport";
+import StudentAttendanceScanner from "@/components/StudentAttendanceScanner";
 
 type UserRole = 'student' | 'teacher' | 'parent' | 'admin';
 
@@ -82,9 +84,35 @@ const AppRouter = () => {
             return <StudentDashboard />;
         }
       case 'attendance':
+        if (profile?.role === 'student') {
+          return <AttendanceReport />;
+        }
         return <AttendanceSystem />;
       case 'ai-analyzer':
         return <AIAnalyzer />;
+      case 'curriculum':
+        return (
+          <div className="text-center py-20">
+            <h2 className="text-2xl font-bold mb-4">Curriculum Management</h2>
+            <p className="text-muted-foreground">Access and manage educational content</p>
+          </div>
+        );
+      case 'reports':
+        return <AttendanceReport />;
+      case 'chatbot':
+        return (
+          <div className="text-center py-20">
+            <h2 className="text-2xl font-bold mb-4">AI Chatbot</h2>
+            <p className="text-muted-foreground">Interactive AI assistance coming soon!</p>
+          </div>
+        );
+      case 'settings':
+        return (
+          <div className="text-center py-20">
+            <h2 className="text-2xl font-bold mb-4">Settings</h2>
+            <p className="text-muted-foreground">Customize your experience</p>
+          </div>
+        );
       default:
         return (
           <div className="text-center py-20">
