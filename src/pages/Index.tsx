@@ -1,7 +1,5 @@
 import AppRouter from "@/components/AppRouter";
 
-const Index = () => {
+export default function Index() {
   return <AppRouter />;
-};
-
-export default Index;
+}
